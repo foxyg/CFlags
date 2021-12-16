@@ -14,34 +14,41 @@
           class="switch-toggle"
           :class="{ 'switch-toggle-checked': userTheme === 'dark-theme' }"
         ></div>
-      </label>     
+      </label> 
+      <br />
+      <div class="row">
+            <div class="search-wrapper panel-heading col-sm-12">
+                <input class="form-control" type="text" v-model="searchQuery" placeholder="Search" />
+          </div>                        
+      </div>    
       <table class="table table-striped table-hover">
         <thead>
           <tr>
-            <th>Country</th>
-            <th>Flag</th>
+            
+            <th>Flags</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="flag in flags" v-bind:key="flag.id">
-            <td ref="groupId" :value=flag.CountryName>{{flag.CountryName}}</td>
+          <tr v-for="flag in resultQuery" v-bind:key="flag.id">           
             <td >
                 <b-button v-b-modal  :value=flag.CountryName>
                     <img :src="flag.ImageUrl"  @click="getCountry(flag.CountryName)"  alt="Country Flag" width="60px" height="30px" />
-                </b-button>                               
-            </td>
-            
+                </b-button>                                              
+            </td>           
           </tr>
         </tbody>
       </table>
-      <Modal />
+      <b-modal id="modal-1" title="Country Details">
+            <p class="my-4"><b>Country: </b>{{selectedItem.Name}}</p>
+            <p class="my-4"><b>Capital: </b>{{selectedItem.Capital}}</p>
+            <p class="my-4"><b>Population: </b>{{selectedItem.Population}}</p>
+        </b-modal>
     </div>    
   </div>
 </template>
 
 <script>
 import axios from "axios";
-import Modal from "./Modal.vue";
 
 export default {
   mounted() {
@@ -50,7 +57,7 @@ export default {
   },
 
   components: {
-    Modal
+
   },
 
   data() {
@@ -59,9 +66,11 @@ export default {
       flags: [],
       cntry: null,
       CountryDetails:[],
+      selectedItem: {},
+      searchQuery: null,
     };
   },
-
+  
   methods: {
     setTheme(theme) {
       localStorage.setItem("user-theme", theme);
@@ -69,6 +78,11 @@ export default {
       document.documentElement.className = theme;
     },
 
+    selectItem(item) {
+      this.selectedItem = item
+      //this.showModal = true
+      this.$bvModal.show('modal-1')
+    },
     toggleTheme() {
       console.log("Theme toggle");
       const activeTheme = localStorage.getItem("user-theme");
@@ -98,9 +112,10 @@ export default {
 
         try{
             const response = await axios.get("http://localhost:34977/api/countrydetails" +"/country/" + this.cntry);
-            this.CountryDetails = response.data;
+            this.CountryDetails = response.data.CountryDetails;
 
-            this.$bvModal.show('modal-1')
+            this.selectItem(this.CountryDetails)
+            //this.$bvModal.show('modal-1')
             //$('#modal-1').modal('show')
             console.log(this.CountryDetails);
         }catch(error) {
@@ -124,6 +139,18 @@ export default {
     this.getFlags();
     
   },
+
+  computed: {
+    resultQuery(){
+      if(this.searchQuery){
+      return this.flags.filter((flag)=>{
+        return this.searchQuery.toLowerCase().split(' ').every(v => flag.CountryName.toLowerCase().includes(v))
+      })
+      }else{
+        return this.flags;
+      }
+    }
+  }
 };
 </script>
 
@@ -151,12 +178,11 @@ body {
 }
 
 p {
-  color: var(--text-primary-color);
+  color: black;
 }
 
 .container-center {
-  background-color: var(--background-color-primary);
-  height: 100vh;
+  background-color: var(--background-color-primary); 
   width: 100vw;
   display: flex;
   align-items: center;
