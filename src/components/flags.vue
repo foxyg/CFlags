@@ -17,27 +17,17 @@
       </label> 
       <br />
       <div class="row">
-            <div class="search-wrapper panel-heading col-sm-12">
+          <div class="search-wrapper panel-heading col-sm-12">
                 <input class="form-control" type="text" v-model="searchQuery" placeholder="Search" />
           </div>                        
       </div>    
-      <table class="table table-striped table-hover">
-        <thead>
-          <tr>
-            
-            <th>Flags</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="flag in resultQuery" v-bind:key="flag.id">           
-            <td >
-                <b-button v-b-modal  :value=flag.CountryName>
-                    <img :src="flag.ImageUrl"  @click="getCountry(flag.CountryName)"  alt="Country Flag" width="60px" height="30px" />
-                </b-button>                                              
-            </td>           
-          </tr>
-        </tbody>
-      </table>
+      <div>
+        <ul :style="gridStyle" class="card-list" > 
+          <div  v-for="flag in resultQuery" v-bind:key="flag.id" class="card-item">           
+              <img :src="flag.ImageUrl" class="image" @click="getCountry(flag.CountryName)"  alt="Country Flag" width="60px" height="30px" />           
+          </div>                                                                                                  
+        </ul>
+      </div>
       <b-modal id="modal-1" title="Country Details">
             <p class="my-4"><b>Country: </b>{{selectedItem.Name}}</p>
             <p class="my-4"><b>Capital: </b>{{selectedItem.Capital}}</p>
@@ -68,6 +58,7 @@ export default {
       CountryDetails:[],
       selectedItem: {},
       searchQuery: null,
+      numberOfColumns: 2,
     };
   },
   
@@ -149,7 +140,13 @@ export default {
       }else{
         return this.flags;
       }
-    }
+    },
+
+    gridStyle() {
+      return {
+        gridTemplateColumns: "repeat(${this.numberOfColumns}, minmax(100px, 1fr))"
+      }
+    },
   }
 };
 </script>
@@ -187,6 +184,7 @@ p {
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 49vw;
 }
 
 .card {
@@ -293,4 +291,20 @@ table td:last-child {
 table tbody tr:nth-child(2n) td {
   background: #d4d8f9;
 }
+
+.card-list {
+  display: grid;
+  grid-gap: 0.3em;
+  grid-template-columns: repeat(4, minmax(100px, 1fr));
+  margin: 20px 0 0 -60px;
+}
+
+.image{
+  cursor: pointer;
+}
+
+.card-item {
+  padding: 0.5em;
+}
+
 </style>
